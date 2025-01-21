@@ -1,9 +1,11 @@
 package com.trippntechnology.regexwordfinder.ux.mainactivity
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,7 +21,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trippntechnology.regexwordfinder.ui.theme.AppTheme
 import com.trippntechnology.regexwordfinder.ui.widget.FilterTextField
-import com.trippntechnology.regexwordfinder.ui.widget.SynchronizeScrolling
 import kotlinx.coroutines.flow.MutableStateFlow
 
 
@@ -34,25 +35,25 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding(),
     ) { paddingValues ->
-        SynchronizeScrolling(
+        Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(16.dp),
-            pinSyncedContent = query.isNotBlank(),
-            syncedContent = { syncModifier ->
-                FilterTextField(
-                    modifier = syncModifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    query = query,
-                    placeholder = "Regex",
-                    onQueryChange = uiState.onQueryChange,
-                    onSearch = uiState.onSearch,
-                )
-            }) { contentPadding ->
-            LazyColumn(contentPadding = contentPadding) {
+                .padding(16.dp)
+        ) {
+            FilterTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                query = query,
+                placeholder = "Regex",
+                onQueryChange = uiState.onQueryChange,
+                onSearch = uiState.onSearch,
+            )
+            LazyColumn(/*contentPadding = contentPadding*/) {
                 items(results.chunked(2)) { result ->
                     Row(
                         modifier = Modifier
