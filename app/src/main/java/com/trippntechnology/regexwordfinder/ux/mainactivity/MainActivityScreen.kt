@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,29 +35,42 @@ fun MainActivityScreen(viewModel: MainActivityViewModel = hiltViewModel()) {
 
 @Composable
 private fun MainActivityContent(uiState: MainActivityUiState) {
-    val query by uiState.queryFlow.collectAsStateWithLifecycle()
+    val queries by uiState.queryListFlow.collectAsStateWithLifecycle()
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .imePadding(),
+        floatingActionButton = {
+            FloatingActionButton(onClick = uiState.onAddQuery) {
+                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add")
+            }
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            FilterTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                query = query,
-                placeholder = "Regex",
-                onQueryChange = uiState.onQueryChange,
-                onSearch = uiState.onSearch,
-            )
-            LazyColumn(/*contentPadding = contentPadding*/) {
+            Column {
+                queries.forEachIndexed { index, query ->
+                    FilterTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        query = query,
+                        placeholder = "Regex",
+                        onQueryChange = { uiState.onQueryChange(index, it) },
+                        onSearch = uiState.onSearch,
+                        onRemove = if (index > 0) {
+                            { uiState.onRemoveQuery(index) }
+                        } else null,
+                        onClear = { uiState.onClearQuery(index) }
+                    )
+                }
+            }
+            LazyColumn {
                 items(results.chunked(2)) { result ->
                     Row(
                         modifier = Modifier

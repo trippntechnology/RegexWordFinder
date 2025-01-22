@@ -4,8 +4,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 data class MainActivityUiState(
-    val queryFlow: StateFlow<String> = MutableStateFlow(""),
+    val queryListFlow: StateFlow<List<String>> = MutableStateFlow(listOf("")),
     val resultsFlow: StateFlow<List<String>> = MutableStateFlow(emptyList()),
-    val onQueryChange: (String) -> Unit = {},
-    val onSearch: (String) -> Unit = {}
+    val onAddQuery: () -> Unit = {},
+    val onClearQuery: (Int) -> Unit = {},
+    val onQueryChange: (Int, String) -> Unit = { _, _ -> },
+    val onRemoveQuery: (Int) -> Unit = {},
+    val onSearch: () -> Unit = {},
 )

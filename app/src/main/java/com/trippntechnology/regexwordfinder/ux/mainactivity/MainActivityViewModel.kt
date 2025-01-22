@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.trippntechnology.regexwordfinder.ext.stateInDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import okio.assetfilesystem.asFileSystem
@@ -16,16 +17,37 @@ class MainActivityViewModel @Inject constructor(
     application: Application,
 ) : ViewModel() {
 
-    private val queryFlow = MutableStateFlow<String>("")
+    private val queriesFlow = MutableStateFlow<List<String>>(listOf<String>(""))
     private val resultsFlow = MutableStateFlow<List<String>>(emptyList())
     private val words: Map<String, Int>
-//    private var job: Job? = null
 
     val uiState = MainActivityUiState(
-        queryFlow = queryFlow.stateInDefault(viewModelScope, ""),
+        queryListFlow = queriesFlow.stateInDefault(viewModelScope, listOf("")),
         resultsFlow = resultsFlow.stateInDefault(viewModelScope, emptyList()),
-        onQueryChange = { queryFlow.value = it },
-        onSearch = ::onSearch
+        onAddQuery = {
+            queriesFlow.update { list ->
+                val mutableList = list.toMutableList()
+                mutableList.add("")
+                mutableList
+            }
+        },
+        onQueryChange = ::onQueryChange,
+        onRemoveQuery = { index ->
+            queriesFlow.update { list ->
+                val mutableList = list.toMutableList()
+                mutableList.removeAt(index)
+                mutableList
+            }
+        },
+        onSearch = ::onSearch,
+        onClearQuery = { index ->
+            queriesFlow.update { list ->
+                val mutableList = list.toMutableList()
+                mutableList[index] = ""
+                mutableList
+            }
+            onSearch()
+        }
     )
 
     init {
@@ -37,35 +59,25 @@ class MainActivityViewModel @Inject constructor(
         resultsFlow.value = words.keys.toList()
     }
 
-//    fun onQueryChange(query: String) {
-//        queryFlow.value = query
-//        job?.cancel()
-//        job = viewModelScope.launch {
-//            delay(1000)
-//            if (job?.isCancelled == true) return@launch
-//            resultsFlow.value = if (query.isNotBlank()) {
-//                try {
-//                    val regex = Regex(pattern = query, option = RegexOption.IGNORE_CASE)
-//                    words.keys.mapNotNull { word -> if (regex.matches(word)) word else null }
-//                } catch (ex: Exception) {
-//                    words.keys.toList()
-//                }
-//            } else {
-//                words.keys.toList()
-//            }
-//        }
-//    }
+    fun onQueryChange(index: Int, query: String) {
+        queriesFlow.update { list ->
+            val mutableList = list.toMutableList()
+            mutableList[index] = query
+            mutableList
+        }
+    }
 
-    fun onSearch(query: String) {
-        resultsFlow.value = if (query.isNotBlank()) {
-            try {
-                val regex = Regex(pattern = query, option = RegexOption.IGNORE_CASE)
-                words.keys.mapNotNull { word -> if (regex.matches(word)) word else null }
-            } catch (ex: Exception) {
-                words.keys.toList()
-            }
-        } else {
-            words.keys.toList()
+    fun onSearch() {
+        resultsFlow.value = words.keys.toList()
+        queriesFlow.value.forEach { query ->
+            resultsFlow.value = if (query.isNotBlank()) {
+                try {
+                    val regex = Regex(pattern = query, option = RegexOption.IGNORE_CASE)
+                    resultsFlow.value.mapNotNull { word -> if (regex.matches(word)) word else null }
+                } catch (ex: Exception) {
+                    resultsFlow.value
+                }
+            } else resultsFlow.value
         }
     }
 }
