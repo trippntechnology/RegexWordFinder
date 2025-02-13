@@ -16,8 +16,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -37,6 +40,7 @@ fun MainActivityScreen(viewModel: MainActivityViewModel = hiltViewModel()) {
 private fun MainActivityContent(uiState: MainActivityUiState) {
     val queries by uiState.queryListFlow.collectAsStateWithLifecycle()
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
+    val focusRequester = FocusRequester()
 
     Scaffold(
         modifier = Modifier
@@ -58,7 +62,8 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                     FilterTextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                            .padding(bottom = 16.dp)
+                            .then(if (index == queries.size - 1) Modifier.focusRequester(focusRequester) else Modifier),
                         query = query,
                         placeholder = "Regex",
                         onQueryChange = { uiState.onQueryChange(index, it) },
@@ -90,6 +95,8 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
             }
         }
     }
+
+    LaunchedEffect(queries) { focusRequester.requestFocus() }
 }
 
 @PreviewLightDark
