@@ -11,4 +11,5 @@ data class MainActivityUiState(
     val onQueryChange: (Int, String) -> Unit = { _, _ -> },
     val onRemoveQuery: (Int) -> Unit = {},
     val onSearch: () -> Unit = {},
+    val onOrderByMostLikely: () -> Unit = {},
 )

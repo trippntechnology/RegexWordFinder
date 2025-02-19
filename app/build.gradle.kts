@@ -50,6 +50,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -67,5 +68,4 @@ dependencies {
     kspTest(libs.google.dagger.compiler)
     testImplementation(libs.assertk)
     testImplementation(libs.junit)
-
 }

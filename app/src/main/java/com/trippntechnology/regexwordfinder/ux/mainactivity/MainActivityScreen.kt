@@ -11,16 +11,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.SortByAlpha
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -47,10 +52,11 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
             .fillMaxSize()
             .imePadding(),
         floatingActionButton = {
-            FloatingActionButton(onClick = uiState.onAddQuery) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add")
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                if (results.size < 10000) SmallFloatingActionButton(onClick = uiState.onOrderByMostLikely) { Icon(imageVector = Icons.Default.SortByAlpha, contentDescription = "Sort") }
+                FloatingActionButton(onClick = uiState.onAddQuery) { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add") }
             }
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -74,6 +80,9 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                         onClear = { uiState.onClearQuery(index) }
                     )
                 }
+                Text(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp), text = "Count: ${results.size}", textAlign = TextAlign.End, style = MaterialTheme.typography.bodySmall)
             }
             LazyColumn {
                 items(results.chunked(2)) { result ->
