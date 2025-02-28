@@ -77,12 +77,15 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                         onRemove = if (index > 0) {
                             { uiState.onRemoveQuery(index) }
                         } else null,
-                        onClear = { uiState.onClearQuery(index) }
+                        onClear = { uiState.onClearQuery(index) },
+                        enabled = index == queries.size - 1,
                     )
                 }
-                Text(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp), text = "Count: ${results.size}", textAlign = TextAlign.End, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp), text = "Count: ${results.size}", textAlign = TextAlign.End, style = MaterialTheme.typography.bodySmall
+                )
             }
             LazyColumn {
                 items(results.chunked(2)) { result ->

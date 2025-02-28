@@ -30,6 +30,7 @@ fun FilterTextField(
     query: String,
     placeholder: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onQueryChange: (String) -> Unit,
     onClear: () -> Unit,
     onSearch: () -> Unit,
@@ -53,11 +54,12 @@ fun FilterTextField(
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         trailingIcon = {
             if (query.isNotBlank()) {
-                Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.clickable { onClear() })
+                Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.clickable { if (enabled) onClear() })
             } else if (onRemove != null) {
-                Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.clickable { onRemove() })
+                Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.clickable { if (enabled) onRemove() })
             }
         },
+        enabled = enabled,
     )
 }
 

@@ -1,6 +1,6 @@
 [versions]
-agp = "8.8.1" # see https://developer.android.com/studio/releases/gradle-plugin
-androidxActivityCompose = "1.10.0"
+agp = "8.8.2" # see https://developer.android.com/studio/releases/gradle-plugin
+androidxActivityCompose = "1.10.1"
 androidxComposeBom = "2025.02.00"
 androidxComposeMaterial = "1.7.8"
 androidxCoreKtx = "1.15.0"
@@ -14,7 +14,7 @@ hilt = "2.55"
 junit = "4.13.2"
 kotlin = "2.1.10"
 kotlinxSerializationJson = "1.8.0"
-ksp = "2.1.10-1.0.29" # https://search.maven.org/artifact/com.google.devtools.ksp/symbol-processing-api
+ksp = "2.1.10-1.0.30" # https://search.maven.org/artifact/com.google.devtools.ksp/symbol-processing-api
 okio = "3.10.2"
 
 [libraries]
