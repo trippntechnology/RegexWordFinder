@@ -12,12 +12,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +33,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.trippntechnology.regexwordfinder.ui.icons.Die
 import com.trippntechnology.regexwordfinder.ui.theme.AppTheme
 import com.trippntechnology.regexwordfinder.ui.widget.FilterTextField
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +48,17 @@ fun MainActivityScreen(viewModel: MainActivityViewModel = hiltViewModel()) {
 private fun MainActivityContent(uiState: MainActivityUiState) {
     val queries by uiState.queryListFlow.collectAsStateWithLifecycle()
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
+    val dialogText by uiState.dialogTextFlow.collectAsStateWithLifecycle()
     val focusRequester = FocusRequester()
+
+    dialogText?.let { text ->
+        AlertDialog(
+            onDismissRequest = uiState.onDismissDialog,
+            title = { Text("Random Word") },
+            text = { Text(text) },
+            confirmButton = { TextButton(onClick = uiState.onDismissDialog) { Text("OK") } }
+        )
+    }
 
     Scaffold(
         modifier = Modifier
@@ -53,6 +66,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
             .imePadding(),
         floatingActionButton = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                SmallFloatingActionButton(onClick = uiState.onChooseRandomWord) { Icon(imageVector = Icons.Outlined.Die, contentDescription = "Sort") }
                 if (results.size < 10000) SmallFloatingActionButton(onClick = uiState.onOrderByMostLikely) { Icon(imageVector = Icons.Default.SortByAlpha, contentDescription = "Sort") }
                 FloatingActionButton(onClick = uiState.onAddQuery) { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add") }
             }

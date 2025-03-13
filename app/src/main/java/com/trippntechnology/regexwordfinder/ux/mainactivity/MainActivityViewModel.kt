@@ -10,20 +10,26 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import okio.assetfilesystem.asFileSystem
+import java.time.LocalDateTime
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
     application: Application,
 ) : ViewModel() {
 
+    private val random = Random(LocalDateTime.now().nano)
     private val queriesFlow = MutableStateFlow<List<String>>(listOf<String>(""))
     private val resultsFlow = MutableStateFlow<List<String>>(emptyList())
     private val words: Map<String, Int>
 
+    private val dialogTextFlow = MutableStateFlow<String?>(null)
+
     val uiState = MainActivityUiState(
         queryListFlow = queriesFlow.stateInDefault(viewModelScope, listOf("")),
         resultsFlow = resultsFlow.stateInDefault(viewModelScope, emptyList()),
+        dialogTextFlow = dialogTextFlow,
         onAddQuery = {
             queriesFlow.update { list ->
                 val mutableList = list.toMutableList()
@@ -48,7 +54,9 @@ class MainActivityViewModel @Inject constructor(
             }
             onSearch()
         },
-        onOrderByMostLikely = { resultsFlow.update { words -> words.sortedBy { getScrabbleScore(it) }/*.map { "$it (${getScrabbleScore(it)})" }*/ } }
+        onOrderByMostLikely = { resultsFlow.update { words -> words.sortedBy { getScrabbleScore(it) }/*.map { "$it (${getScrabbleScore(it)})" }*/ } },
+        onChooseRandomWord = { dialogTextFlow.value = resultsFlow.value[random.nextInt(resultsFlow.value.size)] },
+        onDismissDialog = { dialogTextFlow.value = null }
     )
 
     init {
