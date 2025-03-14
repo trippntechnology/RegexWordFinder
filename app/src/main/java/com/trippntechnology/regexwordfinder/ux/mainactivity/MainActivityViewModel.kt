@@ -1,6 +1,7 @@
 package com.trippntechnology.regexwordfinder.ux.mainactivity
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trippntechnology.regexwordfinder.ext.stateInDefault
@@ -29,7 +30,6 @@ class MainActivityViewModel @Inject constructor(
     val uiState = MainActivityUiState(
         queryListFlow = queriesFlow.stateInDefault(viewModelScope, listOf("")),
         resultsFlow = resultsFlow.stateInDefault(viewModelScope, emptyList()),
-        dialogTextFlow = dialogTextFlow,
         onAddQuery = {
             queriesFlow.update { list ->
                 val mutableList = list.toMutableList()
@@ -55,8 +55,10 @@ class MainActivityViewModel @Inject constructor(
             onSearch()
         },
         onOrderByMostLikely = { resultsFlow.update { words -> words.sortedBy { getScrabbleScore(it) }/*.map { "$it (${getScrabbleScore(it)})" }*/ } },
-        onChooseRandomWord = { dialogTextFlow.value = resultsFlow.value[random.nextInt(resultsFlow.value.size)] },
-        onDismissDialog = { dialogTextFlow.value = null }
+        onChooseRandomWord = {
+            val randomWord = resultsFlow.value[random.nextInt(resultsFlow.value.size)]
+            Toast.makeText(application, randomWord, Toast.LENGTH_SHORT).show()
+        },
     )
 
     init {
