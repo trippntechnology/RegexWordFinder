@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     >
 
+    <uses-permission android:name="android.permission.READ_MEDIA_CLIPBOARD" />
+    <uses-permission android:name="android.permission.READ_CLIPBOARD" />
+
     <application
         android:name=".App"
         android:allowBackup="true"

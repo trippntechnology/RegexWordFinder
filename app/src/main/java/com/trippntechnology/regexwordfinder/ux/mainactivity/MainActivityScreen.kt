@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material.icons.outlined.ContentPaste
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,10 +21,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -34,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trippntechnology.regexwordfinder.ui.icons.Die
 import com.trippntechnology.regexwordfinder.ui.theme.AppTheme
 import com.trippntechnology.regexwordfinder.ui.widget.FilterTextField
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 
 
@@ -42,11 +47,23 @@ fun MainActivityScreen(viewModel: MainActivityViewModel = hiltViewModel()) {
     MainActivityContent(viewModel.uiState)
 }
 
+private const val DOES_NOT_CONTAIN_REGEX = "[^]"
+private const val LOOKAHEAD_SCOPE_REGEX = "(?=.*)"
+
 @Composable
 private fun MainActivityContent(uiState: MainActivityUiState) {
+    val clipboardManager = LocalClipboardManager.current
     val queries by uiState.queryListFlow.collectAsStateWithLifecycle()
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
     val focusRequester = FocusRequester()
+
+    var showPasteButton by remember { mutableStateOf(clipboardManager.hasText()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            showPasteButton = clipboardManager.hasText()
+            delay(100)
+        }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -54,8 +71,17 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
             .imePadding(),
         floatingActionButton = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                SmallFloatingActionButton(onClick = { uiState.onQueryChange(queries.lastIndex, "${queries.last()}$DOES_NOT_CONTAIN_REGEX") }) { Text(DOES_NOT_CONTAIN_REGEX) }
+                SmallFloatingActionButton(onClick = { uiState.onQueryChange(queries.lastIndex, "${queries.last()}$LOOKAHEAD_SCOPE_REGEX") }) { Text(LOOKAHEAD_SCOPE_REGEX) }
+                if (showPasteButton) {
+                    SmallFloatingActionButton(onClick = {
+                        uiState.onQueryChange(
+                            queries.lastIndex,
+                            "${queries.last()}${clipboardManager.getText()?.text.orEmpty()}"
+                        )
+                    }) { Icon(imageVector = Icons.Outlined.ContentPaste, contentDescription = "Sort") }
+                }
                 SmallFloatingActionButton(onClick = uiState.onChooseRandomWord) { Icon(imageVector = Icons.Outlined.Die, contentDescription = "Sort") }
-                if (results.size < 10000) SmallFloatingActionButton(onClick = uiState.onOrderByMostLikely) { Icon(imageVector = Icons.Default.SortByAlpha, contentDescription = "Sort") }
                 FloatingActionButton(onClick = uiState.onAddQuery) { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add") }
             }
         },

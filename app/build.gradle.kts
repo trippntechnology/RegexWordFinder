@@ -42,7 +42,6 @@ android {
 }
 
 dependencies {
-
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.ui.test.junit4)
@@ -51,20 +50,20 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material.icons.extended)
-    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.splashscreen)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.google.hilt.android)
+    implementation(libs.google.dagger.hilt.android)
     implementation(libs.kotlin.serialization.json)
     implementation(libs.okio)
     implementation(libs.okio.assetfilesystem)
     implementation(platform(libs.androidx.compose.bom))
-    ksp(libs.google.hilt.android.compiler)
+    ksp(libs.google.dagger.hilt.android.compiler)
     kspTest(libs.google.dagger.compiler)
     testImplementation(libs.assertk)
     testImplementation(libs.junit)

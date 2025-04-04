@@ -6,14 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trippntechnology.regexwordfinder.ext.stateInDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDateTime
+import javax.inject.Inject
+import kotlin.random.Random
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import okio.assetfilesystem.asFileSystem
-import java.time.LocalDateTime
-import javax.inject.Inject
-import kotlin.random.Random
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
@@ -54,10 +54,9 @@ class MainActivityViewModel @Inject constructor(
             }
             onSearch()
         },
-        onOrderByMostLikely = { resultsFlow.update { words -> words.sortedBy { getScrabbleScore(it) }/*.map { "$it (${getScrabbleScore(it)})" }*/ } },
         onChooseRandomWord = {
             val randomWord = resultsFlow.value[random.nextInt(resultsFlow.value.size)]
-            Toast.makeText(application, randomWord, Toast.LENGTH_SHORT).show()
+            Toast.makeText( application, randomWord, Toast.LENGTH_SHORT).show()
         },
     )
 
