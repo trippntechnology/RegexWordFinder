@@ -2,6 +2,7 @@ package com.trippntechnology.regexwordfinder.ux.mainactivity
 
 import android.app.Application
 import android.widget.Toast
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trippntechnology.regexwordfinder.ext.stateInDefault
@@ -21,23 +22,21 @@ class MainActivityViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val random = Random(LocalDateTime.now().nano)
-    private val queriesFlow = MutableStateFlow<List<String>>(listOf<String>(""))
+    private val queriesFlow = MutableStateFlow(listOf<TextFieldValue>(TextFieldValue("")))
     private val resultsFlow = MutableStateFlow<List<String>>(emptyList())
     private val words: Map<String, Int>
 
-    private val dialogTextFlow = MutableStateFlow<String?>(null)
-
     val uiState = MainActivityUiState(
-        queryListFlow = queriesFlow.stateInDefault(viewModelScope, listOf("")),
+        queriesFlow = queriesFlow.stateInDefault(viewModelScope, listOf(TextFieldValue(""))),
         resultsFlow = resultsFlow.stateInDefault(viewModelScope, emptyList()),
         onAddQuery = {
             queriesFlow.update { list ->
                 val mutableList = list.toMutableList()
-                mutableList.add("")
+                mutableList.add(TextFieldValue(""))
                 mutableList
             }
         },
-        onQueryChange = ::onQueryChange,
+        onQueryChanged = ::onQueryChange,
         onRemoveQuery = { index ->
             queriesFlow.update { list ->
                 val mutableList = list.toMutableList()
@@ -49,14 +48,14 @@ class MainActivityViewModel @Inject constructor(
         onClearQuery = { index ->
             queriesFlow.update { list ->
                 val mutableList = list.toMutableList()
-                mutableList[index] = ""
+                mutableList[index] = TextFieldValue("")
                 mutableList
             }
             onSearch()
         },
         onChooseRandomWord = {
             val randomWord = resultsFlow.value[random.nextInt(resultsFlow.value.size)]
-            Toast.makeText( application, randomWord, Toast.LENGTH_SHORT).show()
+            Toast.makeText(application, randomWord, Toast.LENGTH_SHORT).show()
         },
     )
 
@@ -69,7 +68,7 @@ class MainActivityViewModel @Inject constructor(
         resultsFlow.value = words.keys.toList()
     }
 
-    private fun onQueryChange(index: Int, query: String) {
+    private fun onQueryChange(index: Int, query: TextFieldValue) {
         queriesFlow.update { list ->
             val mutableList = list.toMutableList()
             mutableList[index] = query
@@ -80,23 +79,15 @@ class MainActivityViewModel @Inject constructor(
     private fun onSearch() {
         resultsFlow.value = words.keys.toList()
         queriesFlow.value.forEach { query ->
-            resultsFlow.value = if (query.isNotBlank()) {
+            val pattern = query.text
+            resultsFlow.value = if (pattern.isNotBlank()) {
                 try {
-                    val regex = Regex(pattern = query, option = RegexOption.IGNORE_CASE)
+                    val regex = Regex(pattern = pattern, option = RegexOption.IGNORE_CASE)
                     resultsFlow.value.mapNotNull { word -> if (regex.matches(word)) word else null }
                 } catch (ex: Exception) {
                     resultsFlow.value
                 }
             } else resultsFlow.value
         }
-    }
-
-    private fun getScrabbleScore(word: String): Int = word.sumOf { char -> scrabbleLetterValues[char.uppercaseChar()] ?: 10 }
-
-    companion object {
-        private val scrabbleLetterValues = mapOf(
-            'A' to 1, 'B' to 3, 'C' to 3, 'D' to 2, 'E' to 1, 'F' to 4, 'G' to 2, 'H' to 4, 'I' to 1, 'J' to 8, 'K' to 5, 'L' to 1, 'M' to 3,
-            'N' to 1, 'O' to 1, 'P' to 3, 'Q' to 10, 'R' to 1, 'S' to 1, 'T' to 1, 'U' to 1, 'V' to 4, 'W' to 4, 'X' to 8, 'Y' to 4, 'Z' to 10
-        )
     }
 }

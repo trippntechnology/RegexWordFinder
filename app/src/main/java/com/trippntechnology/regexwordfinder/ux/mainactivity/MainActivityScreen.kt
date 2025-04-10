@@ -29,6 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -48,12 +50,20 @@ fun MainActivityScreen(viewModel: MainActivityViewModel = hiltViewModel()) {
 }
 
 private const val DOES_NOT_CONTAIN_REGEX = "[^]"
-private const val LOOKAHEAD_SCOPE_REGEX = "(?=.*)"
+private const val LOOKAHEAD_EXISTS_REGEX = "(?=.*)"
+private const val LOOKAHEAD_EXCLUDES_REGEX = "(?!.*)"
+
+private fun pasteInto(textFieldValue: TextFieldValue, clipText: String, offset: Int = 0): TextFieldValue {
+    val sb = StringBuilder(textFieldValue.text)
+    val position = textFieldValue.selection.min
+    sb.insert(position, clipText)
+    return TextFieldValue(text = sb.toString(), selection = TextRange(position + clipText.length + offset))
+}
 
 @Composable
 private fun MainActivityContent(uiState: MainActivityUiState) {
     val clipboardManager = LocalClipboardManager.current
-    val queries by uiState.queryListFlow.collectAsStateWithLifecycle()
+    val queries by uiState.queriesFlow.collectAsStateWithLifecycle()
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
     val focusRequester = FocusRequester()
 
@@ -71,14 +81,13 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
             .imePadding(),
         floatingActionButton = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                SmallFloatingActionButton(onClick = { uiState.onQueryChange(queries.lastIndex, "${queries.last()}$DOES_NOT_CONTAIN_REGEX") }) { Text(DOES_NOT_CONTAIN_REGEX) }
-                SmallFloatingActionButton(onClick = { uiState.onQueryChange(queries.lastIndex, "${queries.last()}$LOOKAHEAD_SCOPE_REGEX") }) { Text(LOOKAHEAD_SCOPE_REGEX) }
+                SmallFloatingActionButton(onClick = { uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), DOES_NOT_CONTAIN_REGEX, -1)) }) { Text(DOES_NOT_CONTAIN_REGEX) }
+                SmallFloatingActionButton(onClick = { uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXISTS_REGEX, -1)) }) { Text(LOOKAHEAD_EXISTS_REGEX) }
+                SmallFloatingActionButton(onClick = { uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXCLUDES_REGEX, -1)) }) { Text(LOOKAHEAD_EXCLUDES_REGEX) }
                 if (showPasteButton) {
                     SmallFloatingActionButton(onClick = {
-                        uiState.onQueryChange(
-                            queries.lastIndex,
-                            "${queries.last()}${clipboardManager.getText()?.text.orEmpty()}"
-                        )
+                        val newTextFieldValue = pasteInto(queries.last(), clipboardManager.getText()?.text.orEmpty())
+                        uiState.onQueryChanged(queries.lastIndex, newTextFieldValue)
                     }) { Icon(imageVector = Icons.Outlined.ContentPaste, contentDescription = "Sort") }
                 }
                 SmallFloatingActionButton(onClick = uiState.onChooseRandomWord) { Icon(imageVector = Icons.Outlined.Die, contentDescription = "Sort") }
@@ -100,7 +109,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                             .then(if (index == queries.size - 1) Modifier.focusRequester(focusRequester) else Modifier),
                         query = query,
                         placeholder = "Regex",
-                        onQueryChange = { uiState.onQueryChange(index, it) },
+                        onQueryChange = { uiState.onQueryChanged(index, it) },
                         onSearch = uiState.onSearch,
                         onRemove = if (index > 0) {
                             { uiState.onRemoveQuery(index) }
