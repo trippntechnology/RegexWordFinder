@@ -65,7 +65,7 @@ class MainActivityViewModel @Inject constructor(
 
         val contents = assetFileSystem.read(wordsPath) { readUtf8() }
         words = Json.decodeFromString<Map<String, Int>>(contents)
-        resultsFlow.value = words.keys.toList()
+        resultsFlow.value = words.filter { it.value > 0 }.keys.toList()
     }
 
     private fun onQueryChange(index: Int, query: TextFieldValue) {
