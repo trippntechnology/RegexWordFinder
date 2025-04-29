@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.ContentPaste
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +65,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
     val clipboardManager = LocalClipboardManager.current
     val queries by uiState.queriesFlow.collectAsStateWithLifecycle()
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
+    val isChecked by uiState.checkboxCheckedFlow.collectAsStateWithLifecycle()
     val focusRequester = FocusRequester()
 
     var showPasteButton by remember { mutableStateOf(clipboardManager.hasText()) }
@@ -84,12 +85,12 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                 SmallFloatingActionButton(onClick = { uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), DOES_NOT_CONTAIN_REGEX, -1)) }) { Text(DOES_NOT_CONTAIN_REGEX) }
                 SmallFloatingActionButton(onClick = { uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXISTS_REGEX, -1)) }) { Text(LOOKAHEAD_EXISTS_REGEX) }
                 SmallFloatingActionButton(onClick = { uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXCLUDES_REGEX, -1)) }) { Text(LOOKAHEAD_EXCLUDES_REGEX) }
-                if (showPasteButton) {
-                    SmallFloatingActionButton(onClick = {
-                        val newTextFieldValue = pasteInto(queries.last(), clipboardManager.getText()?.text.orEmpty())
-                        uiState.onQueryChanged(queries.lastIndex, newTextFieldValue)
-                    }) { Icon(imageVector = Icons.Outlined.ContentPaste, contentDescription = "Sort") }
-                }
+//                if (showPasteButton) {
+//                    SmallFloatingActionButton(onClick = {
+//                        val newTextFieldValue = pasteInto(queries.last(), clipboardManager.getText()?.text.orEmpty())
+//                        uiState.onQueryChanged(queries.lastIndex, newTextFieldValue)
+//                    }) { Icon(imageVector = Icons.Outlined.ContentPaste, contentDescription = "Sort") }
+//                }
                 SmallFloatingActionButton(onClick = uiState.onChooseRandomWord) { Icon(imageVector = Icons.Outlined.Die, contentDescription = "Sort") }
                 FloatingActionButton(onClick = uiState.onAddQuery) { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add") }
             }
@@ -105,7 +106,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                     FilterTextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .then(if (index < queries.size - 1) Modifier.padding(bottom = 8.dp) else Modifier)
                             .then(if (index == queries.size - 1) Modifier.focusRequester(focusRequester) else Modifier),
                         query = query,
                         placeholder = "Regex",
@@ -118,11 +119,11 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                         enabled = index == queries.size - 1,
                     )
                 }
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp), text = "Count: ${results.size}", textAlign = TextAlign.End, style = MaterialTheme.typography.bodySmall
-                )
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = isChecked, onCheckedChange = uiState.onCheckboxChanged)
+                    Text(modifier = Modifier.weight(1f), text = "Use popular words")
+                    Text(modifier = Modifier.padding(end = 8.dp), text = "Count: ${results.size}", textAlign = TextAlign.End, style = MaterialTheme.typography.bodySmall)
+                }
             }
             LazyColumn {
                 items(results.chunked(2)) { result ->

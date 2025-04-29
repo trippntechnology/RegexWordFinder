@@ -7,10 +7,12 @@ import kotlinx.coroutines.flow.StateFlow
 data class MainActivityUiState(
     val queriesFlow: StateFlow<List<TextFieldValue>> = MutableStateFlow(listOf(TextFieldValue(""))),
     val resultsFlow: StateFlow<List<String>> = MutableStateFlow(emptyList()),
+    val checkboxCheckedFlow: StateFlow<Boolean> = MutableStateFlow(false),
     val onAddQuery: () -> Unit = {},
     val onClearQuery: (Int) -> Unit = {},
     val onQueryChanged: (Int, TextFieldValue) -> Unit = { _, _ -> },
     val onRemoveQuery: (Int) -> Unit = {},
     val onSearch: () -> Unit = {},
     val onChooseRandomWord: () -> Unit = {},
+    val onCheckboxChanged: (Boolean) -> Unit = {},
 )

@@ -23,12 +23,16 @@ class MainActivityViewModel @Inject constructor(
 
     private val random = Random(LocalDateTime.now().nano)
     private val queriesFlow = MutableStateFlow(listOf<TextFieldValue>(TextFieldValue("")))
+    private val checkboxCheckedFlow = MutableStateFlow(false)
+    private val completeWords: List<String>
+    private val popularWords: List<String>
+
     private val resultsFlow = MutableStateFlow<List<String>>(emptyList())
-    private val words: Map<String, Int>
 
     val uiState = MainActivityUiState(
         queriesFlow = queriesFlow.stateInDefault(viewModelScope, listOf(TextFieldValue(""))),
         resultsFlow = resultsFlow.stateInDefault(viewModelScope, emptyList()),
+        checkboxCheckedFlow = checkboxCheckedFlow.stateInDefault(viewModelScope, false),
         onAddQuery = {
             queriesFlow.update { list ->
                 val mutableList = list.toMutableList()
@@ -57,15 +61,21 @@ class MainActivityViewModel @Inject constructor(
             val randomWord = resultsFlow.value[random.nextInt(resultsFlow.value.size)]
             Toast.makeText(application, randomWord, Toast.LENGTH_SHORT).show()
         },
+        onCheckboxChanged = { checkboxCheckedFlow.value = it }
     )
 
     init {
         val assetFileSystem = application.assets.asFileSystem()
-        val wordsPath = "words_dictionary.json".toPath()
+        val completeWordsPath = "words_dictionary.json".toPath()
+        val popularWordsPath = "popular_dictionary.json".toPath()
 
-        val contents = assetFileSystem.read(wordsPath) { readUtf8() }
-        words = Json.decodeFromString<Map<String, Int>>(contents)
-        resultsFlow.value = words.filter { it.value > 0 }.keys.toList()
+        val completeWordsContents = assetFileSystem.read(completeWordsPath) { readUtf8() }
+        completeWords = Json.decodeFromString<Map<String, Int>>(completeWordsContents).filter { it.value > 0 }.map { it.key }
+
+        val popularWordsContents = assetFileSystem.read(popularWordsPath) { readUtf8() }
+        popularWords = Json.decodeFromString<Map<String, Int>>(popularWordsContents).filter { it.value > 0 }.map { it.key }
+
+        resultsFlow.value = completeWords
     }
 
     private fun onQueryChange(index: Int, query: TextFieldValue) {
@@ -77,7 +87,7 @@ class MainActivityViewModel @Inject constructor(
     }
 
     private fun onSearch() {
-        resultsFlow.value = words.keys.toList()
+        resultsFlow.value = if (checkboxCheckedFlow.value) popularWords else completeWords
         queriesFlow.value.forEach { query ->
             val pattern = query.text
             resultsFlow.value = if (pattern.isNotBlank()) {
