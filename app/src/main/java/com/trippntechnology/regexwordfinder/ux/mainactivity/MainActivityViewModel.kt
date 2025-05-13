@@ -61,7 +61,10 @@ class MainActivityViewModel @Inject constructor(
             val randomWord = resultsFlow.value[random.nextInt(resultsFlow.value.size)]
             Toast.makeText(application, randomWord, Toast.LENGTH_SHORT).show()
         },
-        onCheckboxChanged = { checkboxCheckedFlow.value = it }
+        onCheckboxChanged = {
+            checkboxCheckedFlow.value = it
+            onSearch()
+        },
     )
 
     init {
