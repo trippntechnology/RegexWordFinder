@@ -18,7 +18,7 @@ import okio.assetfilesystem.asFileSystem
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
-    application: Application,
+    private val application: Application,
 ) : ViewModel() {
 
     private val random = Random(LocalDateTime.now().nano)
@@ -28,43 +28,21 @@ class MainActivityViewModel @Inject constructor(
     private val popularWords: List<String>
 
     private val resultsFlow = MutableStateFlow<List<String>>(emptyList())
+    private val scrollToWordFlow = MutableStateFlow<String?>(null)
 
     val uiState = MainActivityUiState(
+        checkboxCheckedFlow = checkboxCheckedFlow.stateInDefault(viewModelScope, false),
         queriesFlow = queriesFlow.stateInDefault(viewModelScope, listOf(TextFieldValue(""))),
         resultsFlow = resultsFlow.stateInDefault(viewModelScope, emptyList()),
-        checkboxCheckedFlow = checkboxCheckedFlow.stateInDefault(viewModelScope, false),
-        onAddQuery = {
-            queriesFlow.update { list ->
-                val mutableList = list.toMutableList()
-                mutableList.add(TextFieldValue(""))
-                mutableList
-            }
-        },
+        scrollToWordFlow = scrollToWordFlow,
+
+        onAddQuery = ::onAddQuery,
+        onCheckboxChanged = ::onCheckboxChanged,
+        onChooseRandomWord = ::onChooseRandomWord,
+        onClearQuery = ::onClearQuery,
         onQueryChanged = ::onQueryChange,
-        onRemoveQuery = { index ->
-            queriesFlow.update { list ->
-                val mutableList = list.toMutableList()
-                mutableList.removeAt(index)
-                mutableList
-            }
-        },
+        onRemoveQuery = ::onRemoveQuery,
         onSearch = ::onSearch,
-        onClearQuery = { index ->
-            queriesFlow.update { list ->
-                val mutableList = list.toMutableList()
-                mutableList[index] = TextFieldValue("")
-                mutableList
-            }
-            onSearch()
-        },
-        onChooseRandomWord = {
-            val randomWord = resultsFlow.value[random.nextInt(resultsFlow.value.size)]
-            Toast.makeText(application, randomWord, Toast.LENGTH_SHORT).show()
-        },
-        onCheckboxChanged = {
-            checkboxCheckedFlow.value = it
-            onSearch()
-        },
     )
 
     init {
@@ -79,6 +57,45 @@ class MainActivityViewModel @Inject constructor(
         popularWords = Json.decodeFromString<Map<String, Int>>(popularWordsContents).filter { it.value > 0 }.map { it.key }
 
         resultsFlow.value = completeWords
+    }
+
+    private fun onRemoveQuery(index: Int) {
+        queriesFlow.update { list ->
+            val mutableList = list.toMutableList()
+            mutableList.removeAt(index)
+            mutableList
+        }
+    }
+
+    private fun onClearQuery(index: Int) {
+        queriesFlow.update { list ->
+            val mutableList = list.toMutableList()
+            mutableList[index] = TextFieldValue("")
+            mutableList
+        }
+        onSearch()
+    }
+
+    private fun onChooseRandomWord() {
+        val currentResults = resultsFlow.value
+        if (currentResults.isNotEmpty()) {
+            val randomWord = currentResults[random.nextInt(currentResults.size)]
+            scrollToWordFlow.value = randomWord
+            Toast.makeText(application, randomWord, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun onCheckboxChanged(checked: Boolean) {
+        checkboxCheckedFlow.value = checked
+        onSearch()
+    }
+
+    private fun onAddQuery() {
+        queriesFlow.update { list ->
+            val mutableList = list.toMutableList()
+            mutableList.add(TextFieldValue(""))
+            mutableList
+        }
     }
 
     private fun onQueryChange(index: Int, query: TextFieldValue) {

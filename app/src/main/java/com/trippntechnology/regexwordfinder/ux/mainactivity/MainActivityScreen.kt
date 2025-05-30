@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -24,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +45,8 @@ import com.trippntechnology.regexwordfinder.ui.theme.AppTheme
 import com.trippntechnology.regexwordfinder.ui.widget.FilterTextField
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -79,6 +83,24 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
 
     // FloatingActionButtonMenu state
     var fabMenuExpanded by remember { mutableStateOf(false) }
+
+    // For scrolling to a word
+    val listState = remember { LazyListState() }
+    val coroutineScope = rememberCoroutineScope()
+    // Scroll when requested
+    LaunchedEffect(uiState.scrollToWordFlow, results) {
+        uiState.scrollToWordFlow.collectLatest { word ->
+            if (word != null) {
+                val index = results.indexOf(word)
+                if (index >= 0) {
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(index / 2)
+                    }
+                }
+            }
+        }
+    }
+
 
     Scaffold(
         modifier = Modifier
@@ -169,7 +191,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                     Text(modifier = Modifier.padding(end = 8.dp), text = "Count: ${results.size}", textAlign = TextAlign.End, style = MaterialTheme.typography.bodySmall)
                 }
             }
-            LazyColumn {
+            LazyColumn(state = listState) {
                 items(results.chunked(2)) { result ->
                     Row(
                         modifier = Modifier
