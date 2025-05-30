@@ -8,6 +8,7 @@ androidxHilt = "1.2.0"
 androidxLifecycle = "2.9.0"
 androidxSplashScreen = "1.1.0-rc01"
 androidxTestJunit = "1.2.1"
+arturboschDetekt = "1.23.8"
 assertk = "0.28.1"
 hilt = "2.56.2"
 junit = "4.13.2"
@@ -15,13 +16,16 @@ kotlin = "2.1.21" # see https://developer.android.com/jetpack/androidx/releases/
 kotlinxSerializationJson = "1.8.1"
 ksp = "2.1.21-2.0.1" # https://search.maven.org/artifact/com.google.devtools.ksp/symbol-processing-api
 okio = "3.12.0"
+undercouchDownload = "5.6.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+arturbosch-detekt-plugin = { id = "io.gitlab.arturbosch.detekt", version.ref = "arturboschDetekt"}
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+undercouch-download-plugin = { id = "de.undercouch.download", version.ref = "undercouchDownload" }
 
 [libraries]
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "androidxComposeMaterialIconsExtended" }

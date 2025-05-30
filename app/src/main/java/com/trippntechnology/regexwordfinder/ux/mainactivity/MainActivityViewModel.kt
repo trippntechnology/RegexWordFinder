@@ -97,7 +97,7 @@ class MainActivityViewModel @Inject constructor(
                 try {
                     val regex = Regex(pattern = pattern, option = RegexOption.IGNORE_CASE)
                     resultsFlow.value.mapNotNull { word -> if (regex.matches(word)) word else null }
-                } catch (ex: Exception) {
+                } catch (ignore: Exception) {
                     resultsFlow.value
                 }
             } else resultsFlow.value

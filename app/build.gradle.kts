@@ -1,9 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.arturbosch.detekt.plugin)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.undercouch.download.plugin)
 }
 
 android {
@@ -65,4 +67,36 @@ dependencies {
     kspTest(libs.google.dagger.compiler)
     testImplementation(libs.assertk)
     testImplementation(libs.junit)
+}
+
+// ./gradlew detektDebug
+// ./gradlew detektBaselineDebug
+detekt {
+    allRules = true // fail build on any finding
+    buildUponDefaultConfig = true // preconfigure defaults
+    config.setFrom(files("$projectDir/build/config/detektConfig.yml")) // point to your custom config defining rules to run, overwriting default behavior
+}
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    // ignore ImageVector files
+    exclude("**/ui/icons**")
+
+    reports {
+        html.required.set(true) // observe findings in your browser with structure and code snippets
+        xml.required.set(true) // checkstyle like format mainly for integrations like Jenkins
+        txt.required.set(true) // similar to the console output, contains issue signature to manually edit baseline files
+    }
+}
+tasks {
+    withType<io.gitlab.arturbosch.detekt.Detekt> {
+// Target version of the generated JVM bytecode. It is used for type resolution.
+        this.jvmTarget = "17"
+        dependsOn("downloadDetektConfig")
+    }
+}
+tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadDetektConfig") {
+    download {
+        onlyIf { !file("build/config/detektConfig.yml").exists() }
+        src("https://raw.githubusercontent.com/ICSEng/AndroidPublic/main/detekt/detektConfig-20230728.yml")
+        dest("build/config/detektConfig.yml")
+    }
 }
