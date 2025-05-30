@@ -13,10 +13,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonMenu
+import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -76,23 +77,66 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
         }
     }
 
+    // FloatingActionButtonMenu state
+    var fabMenuExpanded by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .imePadding(),
         floatingActionButton = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                SmallFloatingActionButton(onClick = { uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), DOES_NOT_CONTAIN_REGEX, -1)) }) { Text(DOES_NOT_CONTAIN_REGEX) }
-                SmallFloatingActionButton(onClick = { uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXISTS_REGEX, -1)) }) { Text(LOOKAHEAD_EXISTS_REGEX) }
-                SmallFloatingActionButton(onClick = { uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXCLUDES_REGEX, -1)) }) { Text(LOOKAHEAD_EXCLUDES_REGEX) }
-//                if (showPasteButton) {
-//                    SmallFloatingActionButton(onClick = {
-//                        val newTextFieldValue = pasteInto(queries.last(), clipboardManager.getText()?.text.orEmpty())
-//                        uiState.onQueryChanged(queries.lastIndex, newTextFieldValue)
-//                    }) { Icon(imageVector = Icons.Outlined.ContentPaste, contentDescription = "Sort") }
-//                }
-                SmallFloatingActionButton(onClick = uiState.onChooseRandomWord) { Icon(imageVector = Icons.Outlined.Die, contentDescription = "Sort") }
-                FloatingActionButton(onClick = uiState.onAddQuery) { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add") }
+            FloatingActionButtonMenu(
+                expanded = fabMenuExpanded,
+                button = {
+                    FloatingActionButton(onClick = { fabMenuExpanded = !fabMenuExpanded }) {
+                        Icon(
+                            imageVector = if (fabMenuExpanded) Icons.Filled.Add else Icons.Filled.Add,
+                            contentDescription = if (fabMenuExpanded) "Close menu" else "Open menu"
+                        )
+                    }
+                }
+            ) {
+                // Regex snippet items
+                FloatingActionButtonMenuItem(
+                    onClick = {
+                        uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), DOES_NOT_CONTAIN_REGEX, -1))
+                        fabMenuExpanded = false
+                    },
+                    icon = { Text(DOES_NOT_CONTAIN_REGEX) },
+                    text = { Text("Does not contain") }
+                )
+                FloatingActionButtonMenuItem(
+                    onClick = {
+                        uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXISTS_REGEX, -1))
+                        fabMenuExpanded = false
+                    },
+                    icon = { Text(LOOKAHEAD_EXISTS_REGEX) },
+                    text = { Text("Lookahead exists") }
+                )
+                FloatingActionButtonMenuItem(
+                    onClick = {
+                        uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXCLUDES_REGEX, -1))
+                        fabMenuExpanded = false
+                    },
+                    icon = { Text(LOOKAHEAD_EXCLUDES_REGEX) },
+                    text = { Text("Lookahead excludes") }
+                )
+                FloatingActionButtonMenuItem(
+                    onClick = {
+                        uiState.onChooseRandomWord()
+                        fabMenuExpanded = false
+                    },
+                    icon = { Icon(imageVector = Icons.Outlined.Die, contentDescription = "Random word") },
+                    text = { Text("Random word") }
+                )
+                FloatingActionButtonMenuItem(
+                    onClick = {
+                        uiState.onAddQuery()
+                        fabMenuExpanded = false
+                    },
+                    icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add query") },
+                    text = { Text("Add query") }
+                )
             }
         },
     ) { paddingValues ->
