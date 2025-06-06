@@ -29,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -83,6 +84,10 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
 
     // FloatingActionButtonMenu state
     var fabMenuExpanded by remember { mutableStateOf(false) }
+    val rotation by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (fabMenuExpanded) 45f else 0f,
+        label = "fabRotation"
+    )
 
     // For scrolling to a word
     val listState = remember { LazyListState() }
@@ -112,8 +117,9 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                 button = {
                     FloatingActionButton(onClick = { fabMenuExpanded = !fabMenuExpanded }) {
                         Icon(
-                            imageVector = if (fabMenuExpanded) Icons.Filled.Add else Icons.Filled.Add,
-                            contentDescription = if (fabMenuExpanded) "Close menu" else "Open menu"
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = if (fabMenuExpanded) "Close menu" else "Open menu",
+                            modifier = Modifier.rotate(rotation)
                         )
                     }
                 }
@@ -125,7 +131,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                         fabMenuExpanded = false
                     },
                     icon = { Text(DOES_NOT_CONTAIN_REGEX) },
-                    text = { Text("Does not contain") }
+                    text = { Text("Does Not Match") }
                 )
                 FloatingActionButtonMenuItem(
                     onClick = {
@@ -133,7 +139,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                         fabMenuExpanded = false
                     },
                     icon = { Text(LOOKAHEAD_EXISTS_REGEX) },
-                    text = { Text("Lookahead exists") }
+                    text = { Text("Word Contains") }
                 )
                 FloatingActionButtonMenuItem(
                     onClick = {
@@ -141,7 +147,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                         fabMenuExpanded = false
                     },
                     icon = { Text(LOOKAHEAD_EXCLUDES_REGEX) },
-                    text = { Text("Lookahead excludes") }
+                    text = { Text("Word Excludes") }
                 )
                 FloatingActionButtonMenuItem(
                     onClick = {
