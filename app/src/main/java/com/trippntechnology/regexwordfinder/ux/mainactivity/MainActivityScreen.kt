@@ -57,7 +57,7 @@ fun MainActivityScreen(viewModel: MainActivityViewModel = hiltViewModel()) {
 
 private const val DOES_NOT_CONTAIN_REGEX = "[^]"
 private const val LOOKAHEAD_EXISTS_REGEX = "(?=.*)"
-private const val LOOKAHEAD_EXCLUDES_REGEX = "(?!.*)"
+private const val LOOKAHEAD_EXCLUDES_REGEX = "(?!.*[])"
 
 private fun pasteInto(textFieldValue: TextFieldValue, clipText: String, offset: Int = 0): TextFieldValue {
     val sb = StringBuilder(textFieldValue.text)
@@ -143,7 +143,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                 )
                 FloatingActionButtonMenuItem(
                     onClick = {
-                        uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXCLUDES_REGEX, -1))
+                        uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXCLUDES_REGEX, -2))
                         fabMenuExpanded = false
                     },
                     icon = { Text(LOOKAHEAD_EXCLUDES_REGEX) },
