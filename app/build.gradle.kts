@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.arturbosch.detekt.plugin)
@@ -10,12 +12,12 @@ plugins {
 
 android {
     namespace = "com.trippntechnology.regexwordfinder"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.trippntechnology.regexwordfinder"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 2
         versionName = "1.0.1"
 
@@ -32,13 +34,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs += listOf(
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
-        )
+
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JVM_17)
+            optIn.add("androidx.compose.material3.ExperimentalMaterial3ExpressiveApi")
+        }
     }
+
     buildFeatures {
         compose = true
     }
