@@ -12,14 +12,14 @@ plugins {
 
 android {
     namespace = "com.trippntechnology.regexwordfinder"
-    compileSdk = 36
+    compileSdk = AppInfo.AndroidSdk.COMPILE
 
     defaultConfig {
-        applicationId = "com.trippntechnology.regexwordfinder"
-        minSdk = 26
-        targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        applicationId = AppInfo.APPLICATION_ID
+        minSdk = AppInfo.AndroidSdk.MIN
+        targetSdk = AppInfo.AndroidSdk.TARGET
+        versionCode = AppInfo.Version.CODE
+        versionName = AppInfo.Version.NAME
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
