@@ -5,7 +5,7 @@ androidxComposeMaterialIconsExtended = "1.7.8"
 androidxCore = "1.17.0"
 androidxEspressoCore = "3.7.0"
 androidxHilt = "1.3.0"
-androidxLifecycle = "2.9.3"
+androidxLifecycle = "2.9.4"
 androidxSplashScreen = "1.1.0-rc01"
 androidxTestJunit = "1.3.0"
 arturboschDetekt = "1.23.8"
@@ -14,13 +14,13 @@ hilt = "2.57.1"
 junit = "4.13.2"
 kotlin = "2.2.20" # see https://developer.android.com/jetpack/androidx/releases/compose-kotlin
 kotlinxSerializationJson = "1.9.0"
-ksp = "2.2.10-2.0.2" # https://search.maven.org/artifact/com.google.devtools.ksp/symbol-processing-api
+ksp = "2.2.20-2.0.3" # https://search.maven.org/artifact/com.google.devtools.ksp/symbol-processing-api
 okio = "3.16.0"
 undercouchDownload = "5.6.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-arturbosch-detekt-plugin = { id = "io.gitlab.arturbosch.detekt", version.ref = "arturboschDetekt"}
+arturbosch-detekt-plugin = { id = "io.gitlab.arturbosch.detekt", version.ref = "arturboschDetekt" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
