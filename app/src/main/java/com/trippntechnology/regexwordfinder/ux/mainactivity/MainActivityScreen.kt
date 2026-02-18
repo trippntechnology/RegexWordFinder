@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -43,7 +42,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trippntechnology.regexwordfinder.ui.icons.Die
 import com.trippntechnology.regexwordfinder.ui.theme.AppTheme
 import com.trippntechnology.regexwordfinder.ui.widget.FilterTextField
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -55,39 +53,12 @@ fun MainActivityScreen(viewModel: MainActivityViewModel = koinViewModel()) {
     MainActivityContent(viewModel.uiState)
 }
 
-private const val DOES_NOT_CONTAIN_REGEX = "[^]"
-private const val LOOKAHEAD_EXISTS_REGEX = "(?=.*)"
-private const val LOOKAHEAD_EXCLUDES_REGEX = "(?!.*[])"
-
-private fun pasteInto(textFieldValue: TextFieldValue, clipText: String, offset: Int = 0): TextFieldValue {
-    val sb = StringBuilder(textFieldValue.text)
-    val position = textFieldValue.selection.min
-    sb.insert(position, clipText)
-    return TextFieldValue(text = sb.toString(), selection = TextRange(position + clipText.length + offset))
-}
-
 @Composable
 private fun MainActivityContent(uiState: MainActivityUiState) {
-    val clipboardManager = LocalClipboardManager.current
     val queries by uiState.queriesFlow.collectAsStateWithLifecycle()
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
     val isChecked by uiState.checkboxCheckedFlow.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
-
-    var showPasteButton by remember { mutableStateOf(clipboardManager.hasText()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            showPasteButton = clipboardManager.hasText()
-            delay(100)
-        }
-    }
-
-    // FloatingActionButtonMenu state
-    var fabMenuExpanded by remember { mutableStateOf(false) }
-    val rotation by androidx.compose.animation.core.animateFloatAsState(
-        targetValue = if (fabMenuExpanded) 45f else 0f,
-        label = "fabRotation"
-    )
 
     // For scrolling to a word
     val listState = remember { LazyListState() }
@@ -106,66 +77,15 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
         }
     }
 
-
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .imePadding(),
         floatingActionButton = {
-            FloatingActionButtonMenu(
-                expanded = fabMenuExpanded,
-                button = {
-                    FloatingActionButton(onClick = { fabMenuExpanded = !fabMenuExpanded }) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = if (fabMenuExpanded) "Close menu" else "Open menu",
-                            modifier = Modifier.rotate(rotation)
-                        )
-                    }
-                }
-            ) {
-                // Regex snippet items
-                FloatingActionButtonMenuItem(
-                    onClick = {
-                        uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), DOES_NOT_CONTAIN_REGEX, -1))
-                        fabMenuExpanded = false
-                    },
-                    icon = { Text(DOES_NOT_CONTAIN_REGEX) },
-                    text = { Text("Does Not Match") }
-                )
-                FloatingActionButtonMenuItem(
-                    onClick = {
-                        uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXISTS_REGEX, -1))
-                        fabMenuExpanded = false
-                    },
-                    icon = { Text(LOOKAHEAD_EXISTS_REGEX) },
-                    text = { Text("Word Contains") }
-                )
-                FloatingActionButtonMenuItem(
-                    onClick = {
-                        uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXCLUDES_REGEX, -2))
-                        fabMenuExpanded = false
-                    },
-                    icon = { Text(LOOKAHEAD_EXCLUDES_REGEX) },
-                    text = { Text("Word Excludes") }
-                )
-                FloatingActionButtonMenuItem(
-                    onClick = {
-                        uiState.onChooseRandomWord()
-                        fabMenuExpanded = false
-                    },
-                    icon = { Icon(imageVector = Icons.Outlined.Die, contentDescription = "Random word") },
-                    text = { Text("Random word") }
-                )
-                FloatingActionButtonMenuItem(
-                    onClick = {
-                        uiState.onAddQuery()
-                        fabMenuExpanded = false
-                    },
-                    icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add query") },
-                    text = { Text("Add query") }
-                )
-            }
+            RegexActionButton(
+                uiState = uiState,
+                queries = queries
+            )
         },
     ) { paddingValues ->
         Column(
@@ -174,51 +94,150 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
                 .padding(16.dp)
         ) {
             Column {
-                queries.forEachIndexed { index, query ->
-                    FilterTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(if (index < queries.size - 1) Modifier.padding(bottom = 8.dp) else Modifier)
-                            .then(if (index == queries.size - 1) Modifier.focusRequester(focusRequester) else Modifier),
-                        query = query,
-                        placeholder = "Regex",
-                        onQueryChange = { uiState.onQueryChanged(index, it) },
-                        onSearch = uiState.onSearch,
-                        onRemove = if (index > 0) {
-                            { uiState.onRemoveQuery(index) }
-                        } else null,
-                        onClear = { uiState.onClearQuery(index) },
-                        enabled = index == queries.size - 1,
-                    )
-                }
+                QueryFields(queries = queries, uiState = uiState, focusRequester = focusRequester)
+
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isChecked, onCheckedChange = uiState.onCheckboxChanged)
                     Text(modifier = Modifier.weight(1f), text = "Use popular words")
-                    Text(modifier = Modifier.padding(end = 8.dp), text = "Count: ${results.size}", textAlign = TextAlign.End, style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        modifier = Modifier.padding(end = 8.dp),
+                        text = "Count: ${results.size}",
+                        textAlign = TextAlign.End,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
-            LazyColumn(state = listState) {
-                items(results.chunked(2)) { result ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        result.forEach { word ->
-                            Text(
-                                modifier = Modifier.weight(1f),
-                                text = word,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
+            ResultsList(results = results, listState = listState)
         }
     }
 
     LaunchedEffect(queries) { focusRequester.requestFocus() }
+}
+
+private fun pasteInto(textFieldValue: TextFieldValue, clipText: String, offset: Int = 0): TextFieldValue {
+    val sb = StringBuilder(textFieldValue.text)
+    val position = textFieldValue.selection.min
+    sb.insert(position, clipText)
+    return TextFieldValue(text = sb.toString(), selection = TextRange(position + clipText.length + offset))
+}
+
+private const val DOES_NOT_CONTAIN_REGEX = "[^]"
+private const val LOOKAHEAD_EXISTS_REGEX = "(?=.*)"
+private const val LOOKAHEAD_EXCLUDES_REGEX = "(?!.*[])"
+
+@Composable
+private fun RegexActionButton(
+    uiState: MainActivityUiState,
+    queries: List<TextFieldValue>
+) {
+    var fabMenuExpanded by remember { mutableStateOf(false) }
+    val rotation by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (fabMenuExpanded) 45f else 0f,
+        label = "fabRotation"
+    )
+
+    FloatingActionButtonMenu(
+        expanded = fabMenuExpanded,
+        button = {
+            FloatingActionButton(onClick = { fabMenuExpanded = !fabMenuExpanded }) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = if (fabMenuExpanded) "Close menu" else "Open menu",
+                    modifier = Modifier.rotate(rotation)
+                )
+            }
+        }
+    ) {
+        FloatingActionButtonMenuItem(
+            onClick = {
+                uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), DOES_NOT_CONTAIN_REGEX, -1))
+                fabMenuExpanded = false
+            },
+            icon = { Text(DOES_NOT_CONTAIN_REGEX) },
+            text = { Text("Does Not Match") }
+        )
+        FloatingActionButtonMenuItem(
+            onClick = {
+                uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXISTS_REGEX, -1))
+                fabMenuExpanded = false
+            },
+            icon = { Text(LOOKAHEAD_EXISTS_REGEX) },
+            text = { Text("Word Contains") }
+        )
+        FloatingActionButtonMenuItem(
+            onClick = {
+                uiState.onQueryChanged(queries.lastIndex, pasteInto(queries.last(), LOOKAHEAD_EXCLUDES_REGEX, -2))
+                fabMenuExpanded = false
+            },
+            icon = { Text(LOOKAHEAD_EXCLUDES_REGEX) },
+            text = { Text("Word Excludes") }
+        )
+        FloatingActionButtonMenuItem(
+            onClick = {
+                uiState.onChooseRandomWord()
+                fabMenuExpanded = false
+            },
+            icon = { Icon(imageVector = Icons.Outlined.Die, contentDescription = "Random word") },
+            text = { Text("Random word") }
+        )
+        FloatingActionButtonMenuItem(
+            onClick = {
+                uiState.onAddQuery()
+                fabMenuExpanded = false
+            },
+            icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add query") },
+            text = { Text("Add query") }
+        )
+    }
+}
+
+@Composable
+private fun QueryFields(
+    queries: List<TextFieldValue>,
+    uiState: MainActivityUiState,
+    focusRequester: FocusRequester
+) {
+    queries.forEachIndexed { index, query ->
+        FilterTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(if (index < queries.size - 1) Modifier.padding(bottom = 8.dp) else Modifier)
+                .then(if (index == queries.size - 1) Modifier.focusRequester(focusRequester) else Modifier),
+            query = query,
+            placeholder = "Regex",
+            onQueryChange = { uiState.onQueryChanged(index, it) },
+            onSearch = uiState.onSearch,
+            onRemove = if (index > 0) {
+                { uiState.onRemoveQuery(index) }
+            } else null,
+            onClear = { uiState.onClearQuery(index) },
+            enabled = index == queries.size - 1,
+        )
+    }
+}
+
+@Composable
+private fun ResultsList(
+    results: List<String>,
+    listState: LazyListState
+) {
+    LazyColumn(state = listState) {
+        items(results.chunked(2)) { result ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                result.forEach { word ->
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = word,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
 }
 
 @PreviewLightDark
