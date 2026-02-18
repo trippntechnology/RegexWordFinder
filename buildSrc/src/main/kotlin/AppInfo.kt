@@ -3,7 +3,7 @@ object AppInfo {
 
     // Manifest version information
     object Version {
-        private const val SEMANTIC_NAME = "1.0.1"
+        private const val SEMANTIC_NAME = "1.0.2"
         val CODE = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
         val BUILD_NUMBER = System.getenv("BUILD_NUMBER") ?: "0"
         val NAME = "$SEMANTIC_NAME-($CODE.$BUILD_NUMBER)"
