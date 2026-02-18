@@ -16,10 +16,13 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonMenu
 import androidx.compose.material3.FloatingActionButtonMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +39,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,6 +58,7 @@ fun MainActivityScreen(viewModel: MainActivityViewModel = koinViewModel()) {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 private fun MainActivityContent(uiState: MainActivityUiState) {
     val queries by uiState.queriesFlow.collectAsStateWithLifecycle()
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
@@ -81,6 +86,26 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
         modifier = Modifier
             .fillMaxSize()
             .imePadding(),
+        topBar = {
+            TopAppBar(
+                title = { Text("Regex Word Finder") },
+                actions = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "Popular", fontSize = 12.sp)
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = uiState.onCheckboxChanged
+                        )
+                    }
+                    IconButton(onClick = uiState.onChooseRandomWord) {
+                        Icon(
+                            imageVector = Icons.Outlined.Die,
+                            contentDescription = "Random word"
+                        )
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             RegexActionButton(
                 uiState = uiState,
@@ -95,17 +120,14 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
         ) {
             Column {
                 QueryFields(queries = queries, uiState = uiState, focusRequester = focusRequester)
-
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = isChecked, onCheckedChange = uiState.onCheckboxChanged)
-                    Text(modifier = Modifier.weight(1f), text = "Use popular words")
-                    Text(
-                        modifier = Modifier.padding(end = 8.dp),
-                        text = "Count: ${results.size}",
-                        textAlign = TextAlign.End,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 8.dp),
+                    text = "Count: ${results.size}",
+                    textAlign = TextAlign.End,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
             ResultsList(results = results, listState = listState)
         }
@@ -171,14 +193,6 @@ private fun RegexActionButton(
             },
             icon = { Text(LOOKAHEAD_EXCLUDES_REGEX) },
             text = { Text("Word Excludes") }
-        )
-        FloatingActionButtonMenuItem(
-            onClick = {
-                uiState.onChooseRandomWord()
-                fabMenuExpanded = false
-            },
-            icon = { Icon(imageVector = Icons.Outlined.Die, contentDescription = "Random word") },
-            text = { Text("Random word") }
         )
         FloatingActionButtonMenuItem(
             onClick = {

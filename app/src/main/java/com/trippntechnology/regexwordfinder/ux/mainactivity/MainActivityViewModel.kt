@@ -76,11 +76,23 @@ class MainActivityViewModel(
     private fun onChooseRandomWord() {
         val currentResults = resultsFlow.value
         if (currentResults.isNotEmpty()) {
-            val randomWord = currentResults[random.nextInt(currentResults.size)]
+            var randomWord: String? = null
+            repeat(MAX_UNIQUE_WORD_ATTEMPTS) {
+                val candidate = currentResults[random.nextInt(currentResults.size)]
+                if (candidate.hasAllUniqueCharacters()) {
+                    randomWord = candidate
+                    return@repeat
+                }
+            }
+            if (randomWord == null) {
+                randomWord = currentResults[random.nextInt(currentResults.size)]
+            }
             scrollToWordFlow.value = randomWord
             Toast.makeText(application, randomWord, Toast.LENGTH_SHORT).show()
         }
     }
+
+    private fun String.hasAllUniqueCharacters(): Boolean = toSet().size == length
 
     private fun onCheckboxChanged(checked: Boolean) {
         checkboxCheckedFlow.value = checked
@@ -116,5 +128,9 @@ class MainActivityViewModel(
                 }
             } else resultsFlow.value
         }
+    }
+
+    private companion object {
+        const val MAX_UNIQUE_WORD_ATTEMPTS = 3
     }
 }
