@@ -39,7 +39,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trippntechnology.regexwordfinder.ui.icons.Die
 import com.trippntechnology.regexwordfinder.ui.theme.AppTheme
@@ -48,10 +47,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.koin.compose.viewmodel.koinViewModel
 
 
 @Composable
-fun MainActivityScreen(viewModel: MainActivityViewModel = hiltViewModel()) {
+fun MainActivityScreen(viewModel: MainActivityViewModel = koinViewModel()) {
     MainActivityContent(viewModel.uiState)
 }
 
@@ -72,7 +72,7 @@ private fun MainActivityContent(uiState: MainActivityUiState) {
     val queries by uiState.queriesFlow.collectAsStateWithLifecycle()
     val results by uiState.resultsFlow.collectAsStateWithLifecycle()
     val isChecked by uiState.checkboxCheckedFlow.collectAsStateWithLifecycle()
-    val focusRequester = FocusRequester()
+    val focusRequester = remember { FocusRequester() }
 
     var showPasteButton by remember { mutableStateOf(clipboardManager.hasText()) }
     LaunchedEffect(Unit) {
