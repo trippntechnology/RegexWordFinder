@@ -1,5 +1,6 @@
 package com.trippntechnology.regexwordfinder.ux.mainactivity
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,10 +14,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonMenu
 import androidx.compose.material3.FloatingActionButtonMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,9 +40,9 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trippntechnology.regexwordfinder.ui.icons.Die
 import com.trippntechnology.regexwordfinder.ui.theme.AppTheme
@@ -153,7 +154,8 @@ private fun RegexActionButton(
     queries: List<TextFieldValue>
 ) {
     var fabMenuExpanded by remember { mutableStateOf(false) }
-    val rotation by androidx.compose.animation.core.animateFloatAsState(
+    val rotation by
+    animateFloatAsState(
         targetValue = if (fabMenuExpanded) 45f else 0f,
         label = "fabRotation"
     )
