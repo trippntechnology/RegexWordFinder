@@ -186,7 +186,7 @@ private fun RegexActionButton(
                 fabMenuExpanded = false
             },
             icon = { Text(LOOKAHEAD_EXISTS_REGEX) },
-            text = { Text("Word Contains") }
+            text = { Text("Contains") }
         )
         FloatingActionButtonMenuItem(
             onClick = {
@@ -194,7 +194,7 @@ private fun RegexActionButton(
                 fabMenuExpanded = false
             },
             icon = { Text(LOOKAHEAD_EXCLUDES_REGEX) },
-            text = { Text("Word Excludes") }
+            text = { Text("Excludes") }
         )
         FloatingActionButtonMenuItem(
             onClick = {
